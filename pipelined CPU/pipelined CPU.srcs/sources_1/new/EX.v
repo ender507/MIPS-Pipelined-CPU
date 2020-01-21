@@ -2,7 +2,7 @@
 module EX(clk,nextPC_ex,ALUCode_ex,ALUSrcB_ex,RegDst_ex,Imm_ex,RsData_ex,RtData_ex,RtAddr_ex,RdAddr_ex,shamt_ex,RegWrite_ex,BranchAddr_ex,aluZero_ex,aluRes_ex,RegWriteAddr_ex);
     input clk;
     input[31:0] nextPC_ex;
-    input[2:0] ALUCode_ex;
+    input[3:0] ALUCode_ex;
     input ALUSrcB_ex;
     input RegDst_ex;
     input[31:0] Imm_ex;
@@ -11,7 +11,7 @@ module EX(clk,nextPC_ex,ALUCode_ex,ALUSrcB_ex,RegDst_ex,Imm_ex,RsData_ex,RtData_
     input[4:0] RtAddr_ex;
     input[4:0] RdAddr_ex;
     input shamt_ex;
-    input RegWrite_ex;
+    output RegWrite_ex;
     output[31:0] BranchAddr_ex;
     output aluZero_ex;
     output[31:0] aluRes_ex;

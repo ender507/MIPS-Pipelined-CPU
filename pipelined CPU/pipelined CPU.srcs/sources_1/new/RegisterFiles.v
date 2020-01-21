@@ -3,14 +3,16 @@ module RegisterFiles(clk, reset, RegWrite_wb,Addr_A,Addr_B,RegWriteAddr,RegWrite
     input clk, reset, RegWrite_wb;
     input[4:0] Addr_A,Addr_B,RegWriteAddr;
     input[31:0] RegWriteData;
-    output[31:0] data_A,data_B;
-    //¶Á¼Ä´æÆ÷
+    output reg[31:0] data_A,data_B;
     reg[31:0]register [1:31];
     integer i;
-    assign data_A=(Addr_A==0)?0: register[Addr_A];
-    assign data_B=(Addr_B==0)?0: register[Addr_B];
+    //¶Á¼Ä´æÆ÷
+    always@(posedge clk)begin
+        assign data_A=(Addr_A==0)?0: register[Addr_A];
+        assign data_B=(Addr_B==0)?0: register[Addr_B];
+    end
     //Ğ´¼Ä´æÆ÷
-    always@(posedge clk or posedge reset)begin
+    always@(negedge clk or posedge reset)begin
         if(reset==1)
             for(i=1; i<32; i= i+1)
             register[i]<=0;

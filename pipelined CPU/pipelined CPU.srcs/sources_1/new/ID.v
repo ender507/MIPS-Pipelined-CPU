@@ -20,7 +20,7 @@ RtAddr_id,RdAddr_id,shamt
     output ALUSrcB_id;
     output Branch_id;
     output MemtoReg_id;
-    output[2:0]ALUCode_id;
+    output[3:0]ALUCode_id;
     output[31:0] Imm_id;
     output[31:0] RsData_id;
     output[31:0] RtData_id;

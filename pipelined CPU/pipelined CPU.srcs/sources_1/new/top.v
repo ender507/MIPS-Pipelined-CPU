@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
+module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
 
     input clk;
     input reset;
@@ -45,7 +45,8 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
     wire RegWrite_wb;
     wire[31:0]RegWriteData_wb;
     wire[4:0]RegWriteAddr_wb;
-    assign RegWriteData_wb = RegData_wb;
+    reg[31:0] regData_wb;
+    assign RegWriteData_wb = regData_wb;
     ID ID(
         //输入 
         .clk(clk),
@@ -75,29 +76,30 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
     wire MemtoReg_ex,RegWrite_ex,MemWrite_ex;
     wire MemRead_ex,ALUSrcB_ex,RegDst_ex,Branch_ex;
     wire[3:0] ALUCode_ex;
-    wire[31:0] Imm_ex,RsData_ex,RtData_ex,next_pc_ex;
+    wire[31:0] Imm_ex,RsData_ex,RtData_ex,nextPC_ex;
     wire shamt_ex;
-    flipflop#(.WIDTH(1))ID_EX1(.clk(clk),.reset(reset),.in(RegWrite_id),.out(RegWrite_ex));
-    flipflop#(.WIDTH(1))ID_EX2(.clk(clk),.reset(reset),.in(RegDst_id),.out(RegDst_ex));
-    flipflop#(.WIDTH(1))ID_EX3(.clk(clk),.reset(reset),.in(MemRead_id),.out(MemRead_ex));
-    flipflop#(.WIDTH(1))ID_EX4(.clk(clk),.reset(reset),.in(MemWrite_id),.out(MemWrite_ex));
-    flipflop#(.WIDTH(1))ID_EX5(.clk(clk),.reset(reset),.in(ALUSrcB_id),.out(ALUSrcB_ex));
-    flipflop#(.WIDTH(1))ID_EX6(.clk(clk),.reset(reset),.in(MemtoReg_id),.out(MemtoReg_ex));
-    flipflop#(.WIDTH(1))ID_EX7(.clk(clk),.reset(reset),.in(Branch_id),.out(Branch_ex));
-    flipflop#(.WIDTH(4))ID_EX8(.clk(clk),.reset(reset),.in(ALUCode_id),.out(ALUCode_ex));
-    flipflop#(.WIDTH(32))ID_EX9(.clk(clk),.reset(reset),.in(nextPC_id),.out(nextPC_ex));
-    flipflop#(.WIDTH(32))ID_EX10(.clk(clk),.reset(reset),.in(RsData_id),.out(RsData_ex));
-    flipflop#(.WIDTH(32))ID_EX11(.clk(clk),.reset(reset),.in(RtData_id),.out(RtData_ex));
-    flipflop#(.WIDTH(32))ID_EX12(.clk(clk),.reset(reset),.in(Imm_id),.out(Imm_ex));
-    flipflop#(.WIDTH(5))ID_EX13(.clk(clk),.reset(reset),.in(RtAddr_id),.out(RtAddr_ex));
-    flipflop#(.WIDTH(5))ID_EX14(.clk(clk),.reset(reset),.in(RdAddr_id),.out(RdAddr_ex));
-    flipflop#(.WIDTH(1))ID_EX14(.clk(clk),.reset(reset),.in(shamt_id),.out(shamt_ex));
+    flipflop#(.width(1))ID_EX1(.clk(clk),.reset(reset),.in(RegWrite_id),.out(RegWrite_ex));
+    flipflop#(.width(1))ID_EX2(.clk(clk),.reset(reset),.in(RegDst_id),.out(RegDst_ex));
+    flipflop#(.width(1))ID_EX3(.clk(clk),.reset(reset),.in(MemRead_id),.out(MemRead_ex));
+    flipflop#(.width(1))ID_EX4(.clk(clk),.reset(reset),.in(MemWrite_id),.out(MemWrite_ex));
+    flipflop#(.width(1))ID_EX5(.clk(clk),.reset(reset),.in(ALUSrcB_id),.out(ALUSrcB_ex));
+    flipflop#(.width(1))ID_EX6(.clk(clk),.reset(reset),.in(MemtoReg_id),.out(MemtoReg_ex));
+    flipflop#(.width(1))ID_EX7(.clk(clk),.reset(reset),.in(Branch_id),.out(Branch_ex));
+    flipflop#(.width(4))ID_EX8(.clk(clk),.reset(reset),.in(ALUCode_id),.out(ALUCode_ex));
+    flipflop#(.width(32))ID_EX9(.clk(clk),.reset(reset),.in(nextPC_id),.out(nextPC_ex));
+    flipflop#(.width(32))ID_EX10(.clk(clk),.reset(reset),.in(RsData_id),.out(RsData_ex));
+    flipflop#(.width(32))ID_EX11(.clk(clk),.reset(reset),.in(RtData_id),.out(RtData_ex));
+    flipflop#(.width(32))ID_EX12(.clk(clk),.reset(reset),.in(Imm_id),.out(Imm_ex));
+    flipflop#(.width(5))ID_EX13(.clk(clk),.reset(reset),.in(RtAddr_id),.out(RtAddr_ex));
+    flipflop#(.width(5))ID_EX14(.clk(clk),.reset(reset),.in(RdAddr_id),.out(RdAddr_ex));
+    flipflop#(.width(1))ID_EX15(.clk(clk),.reset(reset),.in(shamt_id),.out(shamt_ex));
     
     //EX级
     wire[31:0] BranchAddr_ex;
-    wire[31:0] alu_res_ex;
-    wire alu_zero_ex;
+    wire[31:0] aluRes_ex;
+    wire aluZero_ex;
     wire[4:0] RegWriteAddr_ex;
+    wire RegWrite2_ex;
     EX EX(
         //输入
         .clk(clk),
@@ -111,8 +113,8 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
         .RtAddr_ex(RtAddr_ex),
         .RdAddr_ex(RdAddr_ex),
         .shamt_ex(shamt_ex),
-        .RegWrite_ex(RegWrite_ex),
         //输出
+        .RegWrite_ex(RegWrite2_ex),
         .BranchAddr_ex(BranchAddr_ex),
         .aluZero_ex(aluZero_ex),
         .aluRes_ex(aluRes_ex),
@@ -123,20 +125,21 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
     wire MemRead_mem;
     wire MemWrite_mem;
     wire MemtoReg_mem;
+    wire Branch_mem;
     wire[31:0] aluRes_mem;
     wire aluZero_mem;
     wire[31:0] RtData_mem;
     wire[4:0] RegWriteAddr_mem;
-    flipflop#(.WIDTH(1))EX_MEM1(.clk(clk),.reset(reset),.in(RegWrite_ex),.out(RegWrite_mem));
-    flipflop#(.WIDTH(1))EX_MEM2(.clk(clk),.reset(reset),.in(MemRead_ex),.out(MemRead_mem));
-    flipflop#(.WIDTH(1))EX_MEM3(.clk(clk),.reset(reset),.in(MemWrite_ex),.out(MemWrite_mem));
-    flipflop#(.WIDTH(1))EX_MEM4(.clk(clk),.reset(reset),.in(MemtoReg_ex),.out(MemtoReg_mem));
-    flipflop#(.WIDTH(1))EX_MEM5(.clk(clk),.reset(reset),.in(Branch_ex),.out(Branch_mem));
-    flipflop#(.WIDTH(32))EX_MEM6(.clk(clk),.reset(reset),.in(Branch_addr_ex),.out(Branch_addr_mem));
-    flipflop#(.WIDTH(32))EX_MEM7(.clk(clk),.reset(reset),.in(aluRes_ex),.out(aluRes_mem));
-    flipflop#(.WIDTH(1))EX_MEM8(.clk(clk),.reset(reset),.in(aluZero_ex),.out(aluZero_mem));
-    flipflop#(.WIDTH(32))EX_MEM9(.clk(clk),.reset(reset),.in(RtData_ex),.out(RtData_mem));
-    flipflop#(.WIDTH(5))EX_MEM10(.clk(clk),.reset(reset),.in(RegWriteAddr_ex),.out(RegWriteAddr_mem));
+    flipflop#(.width(1))EX_MEM1(.clk(clk),.reset(reset),.in(RegWrite_ex & RegWrite2_ex),.out(RegWrite_mem));
+    flipflop#(.width(1))EX_MEM2(.clk(clk),.reset(reset),.in(MemRead_ex),.out(MemRead_mem));
+    flipflop#(.width(1))EX_MEM3(.clk(clk),.reset(reset),.in(MemWrite_ex),.out(MemWrite_mem));
+    flipflop#(.width(1))EX_MEM4(.clk(clk),.reset(reset),.in(MemtoReg_ex),.out(MemtoReg_mem));
+    flipflop#(.width(1))EX_MEM5(.clk(clk),.reset(reset),.in(Branch_ex),.out(Branch_mem));
+    flipflop#(.width(32))EX_MEM6(.clk(clk),.reset(reset),.in(BranchAddr_ex),.out(BranchAddr_mem));
+    flipflop#(.width(32))EX_MEM7(.clk(clk),.reset(reset),.in(aluRes_ex),.out(aluRes_mem));
+    flipflop#(.width(1))EX_MEM8(.clk(clk),.reset(reset),.in(aluZero_ex),.out(aluZero_mem));
+    flipflop#(.width(32))EX_MEM9(.clk(clk),.reset(reset),.in(RtData_ex),.out(RtData_mem));
+    flipflop#(.width(5))EX_MEM10(.clk(clk),.reset(reset),.in(RegWriteAddr_ex),.out(RegWriteAddr_mem));
 
 
     //MEM级
@@ -144,6 +147,7 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
     MEM MEM(
         //输入
         .clk(clk),
+        .reset(reset),
         .MemRead_mem(MemRead_mem),
         .MemWrite_mem(MemWrite_mem),
         .Branch_mem(Branch_mem),
@@ -157,15 +161,14 @@ module top(clk,reset,inst_if,alu_res_ex,Dout_mem,RtData_id,PC_out);
     wire[31:0] Dout_wb;
     wire[31:0] aluRes_wb;
     wire MemtoReg_wb;
-    flipflop#(.WIDTH(1))MEM_WB1(.clk(clk),.reset(reset),.in(RegWrite_mem),.out(RegWrite_wb));
-    flipflop#(.WIDTH(1))MEM_WB2(.clk(clk),.reset(reset),.in(MemtoReg_mem),.out(MemtoReg_wb));
-    flipflop#(.WIDTH(32))MEM_WB3(.clk(clk),.reset(reset),.in(Dout_mem),.out(Dout_wb));
-    flipflop#(.WIDTH(32))MEM_WB4(.clk(clk),.reset(reset),.in(aluRes_mem),.out(aluRes_wb));
-    flipflop#(.WIDTH(5))MEM_WB5(.clk(clk),.reset(reset),.in(RegWriteAddr_mem),.out(RegWriteAddr_wb));
+    flipflop#(.width(1))MEM_WB1(.clk(clk),.reset(reset),.in(RegWrite_mem),.out(RegWrite_wb));
+    flipflop#(.width(1))MEM_WB2(.clk(clk),.reset(reset),.in(MemtoReg_mem),.out(MemtoReg_wb));
+    flipflop#(.width(32))MEM_WB3(.clk(clk),.reset(reset),.in(Dout_mem),.out(Dout_wb));
+    flipflop#(.width(32))MEM_WB4(.clk(clk),.reset(reset),.in(aluRes_mem),.out(aluRes_wb));
+    flipflop#(.width(5))MEM_WB5(.clk(clk),.reset(reset),.in(RegWriteAddr_mem),.out(RegWriteAddr_wb));
     
     
     //WB级
-    reg[31:0] regData_wb;
     always@(*)
     begin
         case(MemtoReg_wb)

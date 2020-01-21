@@ -33,8 +33,8 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     parameter SRA_func=6'b000011;
     parameter SLLV_func=6'b000100;
     parameter SRLV_func=6'b000110;
-    parameter SLAV_func=6'b000111;
-    wire ADDU,SUBU,AND,OR,XOR,NOR,SLT,SLTU,MOVN,MOVZ,SLL,SRL,SRA,SLLV,SRLV,SLAV;
+    parameter SRAV_func=6'b000111;
+    wire ADDU,SUBU,AND,OR,XOR,NOR,SLT,SLTU,MOVN,MOVZ,SLL,SRL,SRA,SLLV,SRLV,SRAV;
     assign ADDU=(op==R_type_op)&&(func==ADDU_func);
     assign SUBU=(op==R_type_op)&&(func==SUBU_func);
     assign AND=(op==R_type_op)&&(func==AND_func);
@@ -49,10 +49,10 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     assign SRL=(op==R_type_op)&&(func==SRL_func);
     assign SRA=(op==R_type_op)&&(func==SRA_func);
     assign SLLV=(op==R_type_op)&&(func==SLLV_func);
-    assign SRLV=(op==R_type_op)&&(func==SLLV_func);
-    assign SLAV=(op==R_type_op)&&(func==SLLV_func);
+    assign SRLV=(op==R_type_op)&&(func==SRLV_func);
+    assign SRAV=(op==R_type_op)&&(func==SRAV_func);
     wire R_type;
-    assign R_type=ADDU||SUBU||AND||OR||XOR||NOR||SLT||SLTU||MOVN||MOVZ||SLL||SRL||SRA||SLLV||SRLV||SLAV;
+    assign R_type=ADDU||SUBU||AND||OR||XOR||NOR||SLT||SLTU||MOVN||MOVZ||SLL||SRL||SRA||SLLV||SRLV||SRAV;
      
     //Branch
     parameter BEQ_op=6'b000100;
@@ -125,6 +125,12 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
                 SLTU_func: ALUCode<=alu_slt;
                 MOVN_func: ALUCode<=alu_movn;
                 MOVZ_func: ALUCode<=alu_movz;
+                SLL_func: ALUCode<=alu_sll;
+                SRL_func: ALUCode<=alu_srl;
+                SRA_func: ALUCode<=alu_sra;
+                SLLV_func: ALUCode<=alu_sll;
+                SRLV_func: ALUCode<=alu_srl;
+                SRAV_func: ALUCode<=alu_sra;
                 default: ALUCode<=alu_add;
             endcase
         end
