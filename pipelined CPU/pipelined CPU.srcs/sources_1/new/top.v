@@ -35,7 +35,7 @@ module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
 
 
     //ID级(寄存器模块包含WB级的功能，故需要部分WB级的信号)
-    wire[4:0]RtAddr_id,RdAddr_id;                        
+    wire[4:0]RsAddr_id,RtAddr_id,RdAddr_id;                        
     wire MemtoReg_id,RegWrite_id,MemWrite_id;
     wire MemRead_id,ALUSrcB_id,RegDst_id,Branch_id;         
     wire[3:0]ALUCode_id;
@@ -67,12 +67,13 @@ module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
         .Imm_id(Imm_id),
         .RsData_id(RsData_id),
         .RtData_id(RtData_id),
+        .RsAddr_id(RsAddr_id),
         .RtAddr_id(RtAddr_id),
         .RdAddr_id(RdAddr_id),
         .shamt(shamt_id)
     );
     //ID_EX级间寄存器
-    wire[4:0] RtAddr_ex,RdAddr_ex;
+    wire[4:0] RtAddr_ex,RdAddr_ex,RsAddr_ex;
     wire MemtoReg_ex,RegWrite_ex,MemWrite_ex;
     wire MemRead_ex,ALUSrcB_ex,RegDst_ex,Branch_ex;
     wire[3:0] ALUCode_ex;
@@ -93,13 +94,17 @@ module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
     flipflop#(.width(5))ID_EX13(.clk(clk),.reset(reset),.in(RtAddr_id),.out(RtAddr_ex));
     flipflop#(.width(5))ID_EX14(.clk(clk),.reset(reset),.in(RdAddr_id),.out(RdAddr_ex));
     flipflop#(.width(1))ID_EX15(.clk(clk),.reset(reset),.in(shamt_id),.out(shamt_ex));
-    
+    flipflop#(.width(5))ID_EX16(.clk(clk),.reset(reset),.in(RsAddr_id),.out(RsAddr_ex));
     //EX级
     wire[31:0] BranchAddr_ex;
     wire[31:0] aluRes_ex;
     wire aluZero_ex;
     wire[4:0] RegWriteAddr_ex;
     wire RegWrite2_ex;
+    wire[31:0]RsData2_ex,RtData2_ex;
+    //转发条件的引入
+    assign RsData2_ex = (RsAddr_ex == RegWriteAddr_mem)? aluRes_mem : (RsAddr_ex == RegWriteAddr_wb)? aluRes_wb : RsData_ex;
+    assign RtData2_ex = (RtAddr_ex == RegWriteAddr_mem)? aluRes_mem : (RtAddr_ex == RegWriteAddr_wb)? aluRes_wb : RtData_ex;
     EX EX(
         //输入
         .clk(clk),
@@ -108,8 +113,8 @@ module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
         .ALUSrcB_ex(ALUSrcB_ex),
         .RegDst_ex(RegDst_ex),
         .Imm_ex(Imm_ex),
-        .RsData_ex(RsData_ex),
-        .RtData_ex(RtData_ex),
+        .RsData_ex(RsData2_ex),
+        .RtData_ex(RtData2_ex),
         .RtAddr_ex(RtAddr_ex),
         .RdAddr_ex(RdAddr_ex),
         .shamt_ex(shamt_ex),
@@ -140,8 +145,7 @@ module top(clk,reset,inst_if,aluRes_ex,Dout_mem,RtData_id,PC_out);
     flipflop#(.width(1))EX_MEM8(.clk(clk),.reset(reset),.in(aluZero_ex),.out(aluZero_mem));
     flipflop#(.width(32))EX_MEM9(.clk(clk),.reset(reset),.in(RtData_ex),.out(RtData_mem));
     flipflop#(.width(5))EX_MEM10(.clk(clk),.reset(reset),.in(RegWriteAddr_ex),.out(RegWriteAddr_mem));
-
-
+    
     //MEM级
     wire[31:0] Dout_mem;
     MEM MEM(

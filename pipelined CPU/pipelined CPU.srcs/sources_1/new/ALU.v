@@ -8,6 +8,7 @@ output reg[31:0] aluRes,
 output reg zero 
 );
     reg[31:0]tmp;
+    reg[31:0]i;
     always @(input1 or input2 or aluCtr)
     begin 
         assign RegWrite_ex=1;
@@ -20,7 +21,16 @@ output reg zero
             4'b0101: aluRes =~(input1 | input2);
             4'b0110: aluRes = input2 << input1;
             4'b0111: aluRes = input2 >> input1;
-            4'b1000: aluRes = input2 >>> input1;
+            4'b1000: 
+            begin
+                aluRes=input2;
+                assign i=input1;
+                while(i!=32'b0)begin
+                    assign i=i>>1;
+                    aluRes = aluRes>>1;
+                    aluRes[31]=input2[31];
+                end
+            end            
             4'b1001: aluRes = input2 << 16;
             4'b1010: 
             begin

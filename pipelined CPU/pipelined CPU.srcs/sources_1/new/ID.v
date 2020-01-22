@@ -5,7 +5,7 @@ RegDst_id,MemtoReg_id,RegWrite_id,
 MemWrite_id,MemRead_id,ALUCode_id,
 ALUSrcB_id,Branch_id,
 Imm_id,RsData_id,RtData_id,
-RtAddr_id,RdAddr_id,shamt
+RsAddr_id,RtAddr_id,RdAddr_id,shamt
 );
     input clk;
     input reset;
@@ -24,10 +24,12 @@ RtAddr_id,RdAddr_id,shamt
     output[31:0] Imm_id;
     output[31:0] RsData_id;
     output[31:0] RtData_id;
+    output[4:0] RsAddr_id;
     output[4:0] RtAddr_id;
     output[4:0] RdAddr_id;
     output shamt;
-     
+    
+    assign RsAddr_id=inst_id[25:21];
     assign RtAddr_id=inst_id[20:16];
     assign RdAddr_id=inst_id[15:11];
     assign Imm_id={{16{inst_id[15]}},inst_id[15:0]};//立即数的符号拓展
