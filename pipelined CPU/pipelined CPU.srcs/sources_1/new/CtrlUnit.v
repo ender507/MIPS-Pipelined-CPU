@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,MemtoReg,shamt);
+module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,MemtoReg,shamt,jmp);
     input[31:0]inst;
     output RegWrite;
     output RegDst;
@@ -10,6 +10,7 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     output ALUSrc_B;
     output MemtoReg;
     output shamt;
+    output[2:0]jmp;
     wire[5:0] op;
     wire[5:0] func;
     wire[4:0] rt;
@@ -34,7 +35,9 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     parameter SLLV_func=6'b000100;
     parameter SRLV_func=6'b000110;
     parameter SRAV_func=6'b000111;
-    wire ADDU,SUBU,AND,OR,XOR,NOR,SLT,SLTU,MOVN,MOVZ,SLL,SRL,SRA,SLLV,SRLV,SRAV;
+    parameter JR_func=6'b001000;
+    parameter JALR_func=6'b001001;
+    wire ADDU,SUBU,AND,OR,XOR,NOR,SLT,SLTU,MOVN,MOVZ,SLL,SRL,SRA,SLLV,SRLV,SRAV,JR,JALR;
     assign ADDU=(op==R_type_op)&&(func==ADDU_func);
     assign SUBU=(op==R_type_op)&&(func==SUBU_func);
     assign AND=(op==R_type_op)&&(func==AND_func);
@@ -51,10 +54,12 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     assign SLLV=(op==R_type_op)&&(func==SLLV_func);
     assign SRLV=(op==R_type_op)&&(func==SRLV_func);
     assign SRAV=(op==R_type_op)&&(func==SRAV_func);
+    assign JR=(op==R_type_op)&&(func==JR_func);
+    assign JALR=(op==R_type_op)&&(func==JALR_func);
     wire R_type;
-    assign R_type=ADDU||SUBU||AND||OR||XOR||NOR||SLT||SLTU||MOVN||MOVZ||SLL||SRL||SRA||SLLV||SRLV||SRAV;
+    assign R_type=ADDU||SUBU||AND||OR||XOR||NOR||SLT||SLTU||MOVN||MOVZ||SLL||SRL||SRA||SLLV||SRLV||SRAV||JR||JALR;
      
-    //Branch
+    //分支
     parameter BEQ_op=6'b000100;
     parameter BNE_op=6'b000101;
     wire BEQ,BNE,Branch;
@@ -81,7 +86,14 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     wire I_type;
     assign I_type=ADDIU||ANDI||ORI||XORI||SLTI||SLTIU||LUI;
      
-    // sw或lw
+    //J型指令
+    parameter J_op=6'b000010;
+    parameter JAL_op=6'b000011;
+    wire J,JAL;
+    assign J=(op==J_op);
+    assign JAL=(op==JAL_op);
+     
+    // 内存读写
     parameter SW_op=6'b101011;
     parameter LW_op=6'b100011;
     wire SW,LW;
@@ -96,6 +108,7 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     assign MemtoReg=LW;
     assign ALUSrc_B=LW||SW||I_type;
     assign shamt=SLL||SRL||SRA;
+    assign jmp=J?3'b001:JR?3'b010:JAL?3'b011:JALR?3'b100:3'b000;
     
     // ALUCode
     parameter alu_add=4'b0000;
