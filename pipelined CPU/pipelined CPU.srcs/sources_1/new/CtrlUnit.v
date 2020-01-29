@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
-module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,MemtoReg,shamt,jmp);
+module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,MemtoReg,shamt,jmp,flag);
     input[31:0]inst;
     output RegWrite;
     output RegDst;
-    output Branch;
+    output[2:0]Branch;
     output MemRead;
     output MemWrite;
     output[3:0]ALUCode;
@@ -11,6 +11,7 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     output MemtoReg;
     output shamt;
     output[2:0]jmp;
+    output[1:0]flag;
     wire[5:0] op;
     wire[5:0] func;
     wire[4:0] rt;
@@ -62,10 +63,19 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     //分支
     parameter BEQ_op=6'b000100;
     parameter BNE_op=6'b000101;
-    wire BEQ,BNE,Branch;
+    parameter BLEZ_op=6'b000110;
+    parameter BGTZ_op=6'b000111;
+    parameter BLTZ_op=6'b000001;
+    parameter BGEZ_op=6'b000001;
+    wire BEQ,BNE,BLEZ,BGTZ,BLTZ,BGEZ;
+    wire[2:0]Branch;
     assign BEQ=(op==BEQ_op);
     assign BNE=(op==BNE_op);
-    assign Branch=BEQ||BNE;
+    assign BLEZ=(op==BLEZ_op);
+    assign BGTZ=(op==BGTZ_op);
+    assign BLTZ=(op==BLTZ_op)&&(inst[20:16]==5'b00000);
+    assign BGEZ=(op==BGEZ_op)&&(inst[20:16]==5'b00001);
+    assign Branch=BEQ? 3'b001: BNE? 3'b010: BLEZ? 3'b011 : BGTZ? 3'b100 : BLTZ? 3'b101 :BGEZ? 3'b110 : 3'b000;
     
     // I型指令
     parameter ADDIU_op=6'b001001;
@@ -96,17 +106,25 @@ module CtrlUnit(inst,RegWrite,RegDst,Branch,MemRead,MemWrite,ALUCode,ALUSrc_B,Me
     // 内存读写
     parameter SW_op=6'b101011;
     parameter LW_op=6'b100011;
-    wire SW,LW;
+    parameter SB_op=6'b101000;
+    parameter LB_op=6'b100000;
+    parameter LBU_op=6'b100100;
+    wire SW,LW,SB,LB,LBU;
     assign SW=(op==SW_op);
     assign LW=(op==LW_op);
+    assign SB=(op==SB_op);
+    assign LB=(op==LB_op);
+    assign LBU=(op==LBU_op);
+    wire[1:0]flag;
+    assign flag=(SB||LB||LBU)? 2'b00:2'b11;
      
     // 控制信号
-    assign RegWrite=LW||R_type||I_type;
+    assign RegWrite=LW||LB||LBU||R_type||I_type;
     assign RegDst=R_type;
-    assign MemWrite=SW;
-    assign MemRead=LW;
-    assign MemtoReg=LW;
-    assign ALUSrc_B=LW||SW||I_type;
+    assign MemWrite=SW||SB;
+    assign MemRead=LW||LB||LBU;
+    assign MemtoReg=LW||LB||LBU;
+    assign ALUSrc_B=LW||SW||SB||LB||LBU||I_type;
     assign shamt=SLL||SRL||SRA;
     assign jmp=J?3'b001:JR?3'b010:JAL?3'b011:JALR?3'b100:3'b000;
     

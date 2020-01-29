@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
-module IF(clk,reset,BranchOrPc,BranchAddr,jmp,jmpAddr,RsData,nextPC_if,inst_if,pc);
+module IF(clk,reset,branch,branchAddr,jmp,jmpAddr,RsData,nextPC_if,inst_if,pc);
     input clk;
     input reset;   
-    input BranchOrPc;//== Branch & aluZero
-    input[31:0]BranchAddr;//Branch跳转地址
+    input branch;
+    input[31:0]branchAddr;//Branch跳转地址
     input[2:0]jmp;
     input[25:0]jmpAddr;
     input[31:0]RsData;
@@ -15,13 +15,13 @@ module IF(clk,reset,BranchOrPc,BranchAddr,jmp,jmpAddr,RsData,nextPC_if,inst_if,p
     reg[31:0]  pc_in;
     always@(*)
     begin
-        case({jmp,BranchOrPc})
+        case({jmp,branch})
             4'b0000:pc_in<=nextPC_if;
             4'b0010:pc_in<={nextPC_if[29:26],jmpAddr[25:0],2'b00};//j
             4'b0100:pc_in<=RsData;//jr
             4'b0110:pc_in<={nextPC_if[29:26],jmpAddr[25:0],2'b00};//jal
             4'b1000:pc_in<=RsData;//jalr
-            default:pc_in<=BranchAddr;
+            default:pc_in<=branchAddr;
         endcase
     end
     reg[31:0] pc;

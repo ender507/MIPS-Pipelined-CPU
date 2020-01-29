@@ -19,9 +19,10 @@ Compiling module xil_defaultlib.CtrlUnit
 Compiling module xil_defaultlib.RegisterFiles
 Compiling module xil_defaultlib.ID
 Compiling module xil_defaultlib.flipflop(width=1)
+Compiling module xil_defaultlib.flipflop(width=3)
 Compiling module xil_defaultlib.flipflop(width=4)
 Compiling module xil_defaultlib.flipflop(width=5)
-Compiling module xil_defaultlib.flipflop(width=3)
+Compiling module xil_defaultlib.flipflop(width=2)
 Compiling module xil_defaultlib.ALU
 Compiling module xil_defaultlib.EX
 Compiling module xil_defaultlib.DataRAM

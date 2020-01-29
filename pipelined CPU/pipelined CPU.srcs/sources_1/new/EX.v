@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module EX(clk,nextPC_ex,ALUCode_ex,ALUSrcB_ex,RegDst_ex,Imm_ex,RsData_ex,RtData_ex,RtAddr_ex,RdAddr_ex,shamt_ex,jmp,RegWrite_ex,BranchAddr_ex,aluZero_ex,aluRes_ex,RegWriteAddr_ex);
+module EX(clk,nextPC_ex,ALUCode_ex,ALUSrcB_ex,RegDst_ex,Imm_ex,RsData_ex,RtData_ex,RtAddr_ex,RdAddr_ex,shamt_ex,jmp,RegWrite_ex,aluZero_ex,aluRes_ex,RegWriteAddr_ex);
     input clk;
     input[31:0] nextPC_ex;
     input[3:0] ALUCode_ex;
@@ -13,12 +13,10 @@ module EX(clk,nextPC_ex,ALUCode_ex,ALUSrcB_ex,RegDst_ex,Imm_ex,RsData_ex,RtData_
     input shamt_ex;
     input [2:0]jmp;
     output RegWrite_ex;
-    output[31:0] BranchAddr_ex;
     output aluZero_ex;
     output[31:0] aluRes_ex;
     output reg[4:0] RegWriteAddr_ex;
      
-    assign BranchAddr_ex=nextPC_ex+(Imm_ex<<2);
     //ALUSrcBµÄ¶àÑ¡Æ÷
     reg[31:0]input1,input2;
     reg[3:0]ALUCode;
